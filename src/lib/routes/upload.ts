@@ -1,9 +1,15 @@
 import express from "express";
 import FileType from "file-type";
+import fs from "fs-extra";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import path from "path";
-import { compressGif } from "../FileProcessor";
+import {
+	closestSizeRatio,
+	getImageSize,
+	ImageMaxDimensions,
+	resizeImage,
+} from "../FileProcessor";
 
 const whitelistMime = ["image/png", "image/gif"];
 const whitelistExt = ["png", "gif"];
@@ -43,15 +49,60 @@ const upload = multer({
 		return cb(null, true);
 	},
 });
+
 const uploadRouter = express.Router();
 
 uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
-	if (!req.file) return next();
-	const { filename } = req.file;
 	try {
-		await compressGif([path.resolve(process.cwd(), req.file.path)]);
+		if (!req.file) return next();
+		const { path: imageProcessedPath } = req.file;
+		const size = await getImageSize(imageProcessedPath);
+		console.log(req.file);
+		console.log(size);
+
+		for (const [key, value] of Object.entries(ImageMaxDimensions)) {
+			const uniqId = nanoid(32);
+			const finalPath = path.join(
+				process.cwd(),
+				process.env.DIRECTORY_IMG,
+				uniqId
+			);
+
+			await fs.ensureDir(finalPath);
+			console.log(key, finalPath);
+			if (value.format !== "gif") continue; // temp
+			let ratio;
+			if (value.hasOwnProperty("width")) {
+				ratio = closestSizeRatio({
+					maxWidth: value.width,
+					...size,
+				});
+			} else if (value.hasOwnProperty("height")) {
+				ratio = closestSizeRatio({
+					maxHeight: value.height,
+					...size,
+				});
+			} else {
+				ratio = size;
+			}
+
+			const opts = {
+				newWidth: ratio.width,
+				newHeight: ratio.height,
+				compress: value.compress ? value.compress : 0,
+			};
+
+			await resizeImage({
+				imagePath: imageProcessedPath,
+				...opts,
+				output: path.join(finalPath, "tenor.gif"),
+			});
+		}
+
+		fs.removeSync(imageProcessedPath);
 		return res.status(200).json({ success: true, ...req.file });
 	} catch (e) {
+		console.error(e);
 		return next();
 	}
 });
