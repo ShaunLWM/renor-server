@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import {
 	closestSizeRatio,
+	convertToMp4,
 	getImageSize,
 	ImageMaxDimensions,
 	resizeImage,
@@ -60,43 +61,56 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		console.log(req.file);
 		console.log(size);
 
-		for (const [key, value] of Object.entries(ImageMaxDimensions)) {
-			const uniqId = nanoid(32);
-			const finalPath = path.join(
-				process.cwd(),
-				process.env.DIRECTORY_IMG,
-				uniqId
-			);
+		for (const [key, children] of Object.entries(ImageMaxDimensions)) {
+			for (const [mediaType, mediaValue] of Object.entries(children)) {
+				const uniqId = nanoid(32);
+				const finalPath = path.join(
+					process.cwd(),
+					process.env.DIRECTORY_IMG,
+					uniqId
+				);
 
-			await fs.ensureDir(finalPath);
-			console.log(key, finalPath);
-			if (value.format !== "gif") continue; // temp
-			let ratio;
-			if (value.hasOwnProperty("width")) {
-				ratio = closestSizeRatio({
-					maxWidth: value.width,
-					...size,
-				});
-			} else if (value.hasOwnProperty("height")) {
-				ratio = closestSizeRatio({
-					maxHeight: value.height,
-					...size,
-				});
-			} else {
-				ratio = size;
+				await fs.ensureDir(finalPath);
+				console.log(mediaType, finalPath);
+
+				let ratio;
+				if (mediaValue.hasOwnProperty("width")) {
+					ratio = closestSizeRatio({
+						maxWidth: mediaValue.width,
+						...size,
+					});
+				} else if (mediaValue.hasOwnProperty("height")) {
+					ratio = closestSizeRatio({
+						maxHeight: mediaValue.height,
+						...size,
+					});
+				} else {
+					ratio = size;
+				}
+
+				const opts = {
+					newWidth: ratio.width,
+					newHeight: ratio.height,
+					compress: mediaValue.compress ? mediaValue.compress : 0,
+				};
+
+				switch (key) {
+					case "gif":
+						await resizeImage({
+							imagePath: imageProcessedPath,
+							...opts,
+							output: path.join(finalPath, "tenor.gif"),
+						});
+						break;
+					case "mp4":
+						await convertToMp4({
+							imagePath: imageProcessedPath,
+							...opts,
+							output: path.join(finalPath, "tenor.mp4"),
+						});
+						break;
+				}
 			}
-
-			const opts = {
-				newWidth: ratio.width,
-				newHeight: ratio.height,
-				compress: value.compress ? value.compress : 0,
-			};
-
-			await resizeImage({
-				imagePath: imageProcessedPath,
-				...opts,
-				output: path.join(finalPath, "tenor.gif"),
-			});
 		}
 
 		fs.removeSync(imageProcessedPath);

@@ -4,6 +4,7 @@ import express from "express";
 import fs from "fs-extra";
 import helmet from "helmet";
 import path from "path";
+import { checkFfmpegExist } from "./lib/Helper";
 import { uploadRouter } from "./lib/routes";
 
 config();
@@ -26,5 +27,8 @@ app.listen(process.env.SERVER_PORT, async () => {
 	await fs.ensureDir(
 		path.resolve(process.cwd(), process.env.DIRECTORY_PROCESS_IMG)
 	);
+
+	const ffmpeg = await checkFfmpegExist();
+	if (!ffmpeg) throw new Error("FFMPEG doesnt exist");
 	console.log(`[+] server listening on port ${process.env.SERVER_PORT}`);
 });
