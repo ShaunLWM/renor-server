@@ -12,6 +12,7 @@ const MediaSchema: Schema = new Schema({
 	type: {
 		type: String,
 		required: true,
+		enum: ["gif", "mp4", "webm"],
 	},
 });
 
