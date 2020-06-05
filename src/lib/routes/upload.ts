@@ -1,9 +1,11 @@
 import express from "express";
 import FileType from "file-type";
 import fs from "fs-extra";
+import { Schema } from "mongoose";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import path from "path";
+import randomColor from "randomcolor";
 import {
 	closestSizeRatio,
 	convertToMp4,
@@ -11,6 +13,9 @@ import {
 	ImageMaxDimensions,
 	resizeImage,
 } from "../FileProcessor";
+import { findTagId } from "../Helper";
+import Gif from "../models/Gif";
+import Tag from "../models/Tag";
 
 const whitelistMime = ["image/png", "image/gif"];
 const whitelistExt = ["png", "gif"];
@@ -119,6 +124,35 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		console.error(e);
 		return next();
 	}
+});
+
+uploadRouter.post("/tags", async (req, res, next) => {
+	const { gid, tags } = req.body;
+	console.log(req.body);
+	if (typeof gid === "undefined")
+		return res.status(400).json({ msg: "Gif id not provided" });
+	if (gid.trim().length === 0)
+		return res.status(400).json({ msg: "gid cannot be empty" });
+	const gif = await Gif.findOne({ _id: gid.trim() }).exec();
+	if (gif === null) return res.status(400).json({ msg: "Gif not found" });
+	console.log(gif);
+	if (gif.tags.length > 0)
+		return res.status(400).json({ msg: "Tags has already been set" });
+	const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
+	for (const tag of tags) {
+		const id = await findTagId(tag);
+		if (id) tagIds.push(id);
+		else {
+			const newTag = await new Tag({
+				text: tag,
+				color: randomColor({ luminosity: "light" }),
+			}).save();
+			tagIds.push(newTag._id);
+		}
+	}
+
+	await Gif.updateOne({ _id: gid }, { tags: tagIds }).exec();
+	return next();
 });
 
 export { uploadRouter };

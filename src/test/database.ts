@@ -7,6 +7,10 @@ config();
 const db = new Database();
 db.on("connected", async () => {
 	console.log("Connected");
+
+	const { _id } = await Tag.findOne({ text: "LOL" }).exec();
+	console.log(_id);
+	process.exit(0);
 	const tag = await new Tag({
 		text: "dumb",
 		color: "blank",

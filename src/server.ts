@@ -1,3 +1,4 @@
+import bodyParser from "body-parser";
 import cors from "cors";
 import { config } from "dotenv";
 import express from "express";
@@ -15,6 +16,7 @@ const db = new Database();
 
 app.use(cors());
 app.use(helmet());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/upload", uploadRouter);
 
 app.use(

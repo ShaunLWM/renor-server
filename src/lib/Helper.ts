@@ -1,4 +1,6 @@
 import execa from "execa";
+import { Schema } from "mongoose";
+import Tag from "./models/Tag";
 
 const checkFfmpegExist = async (): Promise<boolean> => {
 	try {
@@ -9,4 +11,13 @@ const checkFfmpegExist = async (): Promise<boolean> => {
 		return false;
 	}
 };
-export { checkFfmpegExist };
+
+const findTagId = async (
+	tag: string
+): Promise<Schema.Types.ObjectId | boolean> => {
+	const res = await Tag.findOne({ text: tag.toLowerCase() }).exec();
+	if (res === null) return false;
+	return res._id;
+};
+
+export { checkFfmpegExist, findTagId };
