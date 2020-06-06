@@ -104,7 +104,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 				await fs.ensureDir(finalPath);
 				console.log(mediaType, finalPath);
 
-				let ratio;
+				let ratio: { height: number; width: number };
 				if (mediaValue.hasOwnProperty("width")) {
 					ratio = closestSizeRatio({
 						maxWidth: mediaValue.width,
@@ -122,7 +122,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 				const opts = {
 					newWidth: ratio.width,
 					newHeight: ratio.height,
-					compress: mediaValue.compress ? mediaValue.compress : 0,
+					compress: mediaValue.compress ? mediaValue.compress : false,
 				};
 
 				switch (key) {
@@ -147,6 +147,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 					path: uniqId,
 					type: key,
 					format: mediaType,
+					dimens: [ratio.width, ratio.height],
 				}).save();
 			}
 		}

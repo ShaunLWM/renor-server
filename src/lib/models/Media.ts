@@ -31,6 +31,7 @@ const MediaSchema: Schema = new Schema({
 			"nanowebm",
 		],
 	},
+	dimens: [{ type: Number, required: true }],
 });
 
 export interface IMedia extends Document {
@@ -38,6 +39,7 @@ export interface IMedia extends Document {
 	path: string;
 	type: String;
 	format: string;
+	dimens: Array<number>;
 }
 
 export default model<IMedia>("Media", MediaSchema);

@@ -5,20 +5,31 @@ import { promisify } from "util";
 
 const sizeOf = promisify(require("image-size"));
 
+interface IMDGrandChild {
+	compress?: boolean;
+	width?: number;
+	height?: number;
+	multiply?: number;
+}
+
+interface IMDParent<T> {
+	[key: string]: T;
+}
+
 // https://tenor.com/gifapi/documentation#responseobjects-gifformat
-const ImageMaxDimensions = {
+const ImageMaxDimensions: IMDParent<IMDParent<IMDGrandChild>> = {
 	gif: {
 		gif: {},
 		mediumgif: {
-			compress: 1,
+			compress: true,
 		},
 		tinygif: {
 			width: 220,
-			compress: 1,
+			compress: true,
 		},
 		nanogif: {
 			height: 90,
-			compress: 1,
+			compress: true,
 		},
 	},
 	mp4: {
@@ -119,14 +130,14 @@ const resizeImage = async ({
 	imagePath,
 	newWidth = 0,
 	newHeight = 0,
-	compress = 0,
+	compress = false,
 	output,
 }: {
 	imagePath: string;
 	newWidth?: number;
 	newHeight?: number;
 	output: string;
-	compress: number;
+	compress: boolean;
 }): Promise<void> => {
 	const buf = fs.readFileSync(imagePath);
 	let opts: {
@@ -141,7 +152,7 @@ const resizeImage = async ({
 		opts = { height: newHeight, width: newWidth };
 	else if (newHeight === 0) opts = { width: newWidth };
 	else if (newWidth === 0) opts = { height: newHeight };
-	if (compress === 1) {
+	if (compress) {
 		opts.optimizationLevel = 2;
 		opts.lossy = 120;
 		// opts.colors = 64;
