@@ -11,7 +11,13 @@ const GifSchema: Schema = new Schema({
 		required: true,
 		lowercase: true,
 	},
-	tags: [{ type: Schema.Types.ObjectId, ref: "Tag", text: true }],
+	tags: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "Tag",
+			unique: true,
+		},
+	],
 });
 
 export interface IGif extends Document {
