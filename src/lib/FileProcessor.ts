@@ -5,11 +5,18 @@ import { promisify } from "util";
 
 const sizeOf = promisify(require("image-size"));
 
+enum MediaFilter {
+	DEFAULT = "default",
+	BASIC = "basic",
+	MINIMAL = "minimal",
+}
+
 interface IMDGrandChild {
 	compress?: boolean;
 	width?: number;
 	height?: number;
 	multiply?: number;
+	filter: Array<MediaFilter>;
 }
 
 interface IMDParent<T> {
@@ -19,42 +26,56 @@ interface IMDParent<T> {
 // https://tenor.com/gifapi/documentation#responseobjects-gifformat
 const ImageMaxDimensions: IMDParent<IMDParent<IMDGrandChild>> = {
 	gif: {
-		gif: {},
+		gif: {
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC, MediaFilter.MINIMAL],
+		},
 		mediumgif: {
 			compress: true,
+			filter: [MediaFilter.DEFAULT],
 		},
 		tinygif: {
 			width: 220,
 			compress: true,
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC, MediaFilter.MINIMAL],
 		},
 		nanogif: {
 			height: 90,
 			compress: true,
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC],
 		},
 	},
 	mp4: {
-		mp4: {},
+		mp4: {
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC, MediaFilter.MINIMAL],
+		},
 		loopedmp4: {
 			multiply: 3,
+			filter: [MediaFilter.DEFAULT],
 		},
 		tinymp4: {
 			height: 320,
 			width: 320,
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC],
 		},
 		nanomp4: {
 			height: 150,
 			width: 150,
+			filter: [MediaFilter.DEFAULT, MediaFilter.BASIC],
 		},
 	},
 	webm: {
-		webm: {},
+		webm: {
+			filter: [MediaFilter.DEFAULT],
+		},
 		tinywebm: {
 			height: 320,
 			width: 320,
+			filter: [MediaFilter.DEFAULT],
 		},
 		nanowebm: {
 			height: 150,
 			width: 150,
+			filter: [MediaFilter.DEFAULT],
 		},
 	},
 };
@@ -209,4 +230,5 @@ export {
 	ImageOrientation,
 	ImageMaxDimensions,
 	convertToMp4,
+	MediaFilter,
 };

@@ -7,7 +7,7 @@ import helmet from "helmet";
 import path from "path";
 import Database from "./lib/Database";
 import { checkFfmpegExist } from "./lib/Helper";
-import { uploadRouter } from "./lib/routes";
+import { apiRouter } from "./lib/routes";
 
 config();
 
@@ -17,7 +17,8 @@ const db = new Database();
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use("/upload", uploadRouter);
+app.use("/upload", apiRouter);
+app.use("/api", apiRouter);
 
 app.use(
 	(err: any, req: express.Request, res: express.Response, next: Function) => {

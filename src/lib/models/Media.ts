@@ -1,4 +1,5 @@
 import { Document, model, Schema } from "mongoose";
+import { MediaFilter } from "../FileProcessor";
 
 const MediaSchema: Schema = new Schema({
 	gid: {
@@ -32,6 +33,7 @@ const MediaSchema: Schema = new Schema({
 		],
 	},
 	dimens: [{ type: Number, required: true }],
+	filter: [{ type: MediaFilter, required: true }],
 });
 
 export interface IMedia extends Document {
@@ -40,6 +42,7 @@ export interface IMedia extends Document {
 	type: String;
 	format: string;
 	dimens: Array<number>;
+	filter: Array<MediaFilter>;
 }
 
 export default model<IMedia>("Media", MediaSchema);
