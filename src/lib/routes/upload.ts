@@ -87,7 +87,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 				: `gif-${numberId}`;
 
 		const gif = await new Gif({
-			title: `${tags.slice(0, 2)} GIF`.trim(),
+			title: `${tags.slice(0, 2).join(" ")} GIF`.trim(),
 			slug,
 			tags: tagIds,
 		}).save();

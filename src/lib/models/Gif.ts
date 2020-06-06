@@ -4,13 +4,14 @@ import { ITag } from "./Tag";
 const GifSchema: Schema = new Schema({
 	title: {
 		type: String,
+		text: true,
 	},
 	slug: {
 		type: String,
 		required: true,
 		lowercase: true,
 	},
-	tags: [{ type: Schema.Types.ObjectId, ref: "Tag", index: true }],
+	tags: [{ type: Schema.Types.ObjectId, ref: "Tag", text: true }],
 });
 
 export interface IGif extends Document {
