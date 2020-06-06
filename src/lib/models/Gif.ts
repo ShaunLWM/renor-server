@@ -4,7 +4,6 @@ import { ITag } from "./Tag";
 const GifSchema: Schema = new Schema({
 	title: {
 		type: String,
-		required: true,
 	},
 	slug: {
 		type: String,

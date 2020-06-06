@@ -1,9 +1,10 @@
 import express from "express";
 import FileType from "file-type";
+import filenamifyUrl from "filenamify-url";
 import fs from "fs-extra";
 import { Schema } from "mongoose";
 import multer from "multer";
-import { nanoid } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 import path from "path";
 import randomColor from "randomcolor";
 import {
@@ -15,10 +16,12 @@ import {
 } from "../FileProcessor";
 import { findTagId } from "../Helper";
 import Gif from "../models/Gif";
+import Media from "../models/Media";
 import Tag from "../models/Tag";
 
 const whitelistMime = ["image/png", "image/gif"];
 const whitelistExt = ["png", "gif"];
+const nanoNumbers = customAlphabet("1234567890", 8);
 
 const upload = multer({
 	storage: multer.diskStorage({
@@ -61,10 +64,33 @@ const uploadRouter = express.Router();
 uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 	try {
 		if (!req.file) return next();
-		const { path: imageProcessedPath } = req.file;
+		const { path: imageProcessedPath }: { path: string } = req.file;
+		const { tags = [] }: { tags: Array<string> } = req.body;
 		const size = await getImageSize(imageProcessedPath);
-		console.log(req.file);
-		console.log(size);
+		const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
+		for (const tag of tags) {
+			const id = await findTagId(tag);
+			if (id) tagIds.push(id);
+			else {
+				const newTag = await new Tag({
+					text: tag,
+					color: randomColor({ luminosity: "light" }),
+				}).save();
+				tagIds.push(newTag._id);
+			}
+		}
+
+		const numberId = nanoNumbers();
+		const slug =
+			tags.length > 0
+				? `${filenamifyUrl(tags.join("-"))}-gif-${numberId}`
+				: `gif-${numberId}`;
+
+		const gif = await new Gif({
+			title: `${tags.slice(0, 2)} GIF`.trim(),
+			slug,
+			tags: tagIds,
+		}).save();
 
 		for (const [key, children] of Object.entries(ImageMaxDimensions)) {
 			for (const [mediaType, mediaValue] of Object.entries(children)) {
@@ -115,6 +141,13 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 						});
 						break;
 				}
+
+				await new Media({
+					gid: gif._id,
+					path: uniqId,
+					type: key,
+					format: mediaType,
+				}).save();
 			}
 		}
 
@@ -124,35 +157,6 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		console.error(e);
 		return next();
 	}
-});
-
-uploadRouter.post("/tags", async (req, res, next) => {
-	const { gid, tags } = req.body;
-	console.log(req.body);
-	if (typeof gid === "undefined")
-		return res.status(400).json({ msg: "Gif id not provided" });
-	if (gid.trim().length === 0)
-		return res.status(400).json({ msg: "gid cannot be empty" });
-	const gif = await Gif.findOne({ _id: gid.trim() }).exec();
-	if (gif === null) return res.status(400).json({ msg: "Gif not found" });
-	console.log(gif);
-	if (gif.tags.length > 0)
-		return res.status(400).json({ msg: "Tags has already been set" });
-	const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
-	for (const tag of tags) {
-		const id = await findTagId(tag);
-		if (id) tagIds.push(id);
-		else {
-			const newTag = await new Tag({
-				text: tag,
-				color: randomColor({ luminosity: "light" }),
-			}).save();
-			tagIds.push(newTag._id);
-		}
-	}
-
-	await Gif.updateOne({ _id: gid }, { tags: tagIds }).exec();
-	return next();
 });
 
 export { uploadRouter };

@@ -8,7 +8,7 @@ const sizeOf = promisify(require("image-size"));
 // https://tenor.com/gifapi/documentation#responseobjects-gifformat
 const ImageMaxDimensions = {
 	gif: {
-		original: {},
+		gif: {},
 		mediumgif: {
 			compress: 1,
 		},
@@ -22,7 +22,7 @@ const ImageMaxDimensions = {
 		},
 	},
 	mp4: {
-		original: {},
+		mp4: {},
 		loopedmp4: {
 			multiply: 3,
 		},
@@ -36,7 +36,7 @@ const ImageMaxDimensions = {
 		},
 	},
 	webm: {
-		original: {},
+		webm: {},
 		tinywebm: {
 			height: 320,
 			width: 320,

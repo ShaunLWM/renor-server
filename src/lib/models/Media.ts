@@ -14,12 +14,30 @@ const MediaSchema: Schema = new Schema({
 		required: true,
 		enum: ["gif", "mp4", "webm"],
 	},
+	format: {
+		type: String,
+		required: true,
+		enum: [
+			"gif",
+			"mediumgif",
+			"tinygif",
+			"nanogif",
+			"mp4",
+			"loopedmp4",
+			"tinymp4",
+			"nanomp4",
+			"webm",
+			"tinywebm",
+			"nanowebm",
+		],
+	},
 });
 
 export interface IMedia extends Document {
 	gid: Schema.Types.ObjectId;
 	path: string;
 	type: String;
+	format: string;
 }
 
 export default model<IMedia>("Media", MediaSchema);
