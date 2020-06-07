@@ -222,6 +222,11 @@ const convertToMp4 = async ({
 	}
 };
 
+const getFileSize = (path: string) => {
+	const stats = fs.statSync(path);
+	return stats.size;
+};
+
 export {
 	getImageSize,
 	resizeImage,
@@ -231,4 +236,5 @@ export {
 	ImageMaxDimensions,
 	convertToMp4,
 	MediaFilter,
+	getFileSize,
 };

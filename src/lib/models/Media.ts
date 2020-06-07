@@ -33,15 +33,20 @@ const MediaSchema: Schema = new Schema({
 	},
 	dimens: [{ type: Number, required: true }],
 	filter: [{ type: String, required: true }],
+	size: {
+		type: Number,
+		required: true,
+	},
 });
 
 export interface IMedia extends Document {
 	gid: Schema.Types.ObjectId;
 	path: string;
-	type: String;
+	type: string;
 	format: string;
 	dimens: Array<number>;
 	filter: Array<string>;
+	size: number;
 }
 
 export default model<IMedia>("Media", MediaSchema);

@@ -10,6 +10,7 @@ import randomColor from "randomcolor";
 import {
 	closestSizeRatio,
 	convertToMp4,
+	getFileSize,
 	getImageSize,
 	ImageMaxDimensions,
 	resizeImage,
@@ -125,30 +126,36 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 					compress: mediaValue.compress ? mediaValue.compress : false,
 				};
 
+				let output: string = "";
 				switch (key) {
 					case "gif":
+						output = path.join(finalPath, "tenor.gif");
 						await resizeImage({
 							imagePath: imageProcessedPath,
 							...opts,
-							output: path.join(finalPath, "tenor.gif"),
+							output,
 						});
 						break;
 					case "mp4":
+						output = path.join(finalPath, "tenor.mp4");
 						await convertToMp4({
 							imagePath: imageProcessedPath,
 							...opts,
-							output: path.join(finalPath, "tenor.mp4"),
+							output,
 						});
 						break;
 				}
 
-				await new Media({
-					gid: gif._id,
-					path: uniqId,
-					type: key,
-					format: mediaType,
-					dimens: [ratio.width, ratio.height],
-				}).save();
+				if (output.length > 0) {
+					await new Media({
+						gid: gif._id,
+						path: uniqId,
+						type: key,
+						format: mediaType,
+						dimens: [ratio.width, ratio.height],
+						size: getFileSize(output),
+					}).save();
+				}
 			}
 		}
 
