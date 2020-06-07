@@ -36,7 +36,6 @@ apiRouter.get("/search", async (req, res, next) => {
 	};
 
 	for (const gif of gifs) {
-		console.log(gif);
 		const ig = {
 			title: gif.title,
 			itemurl: gif.slug,

@@ -71,14 +71,17 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
 		for (const tag of tags) {
 			const id = await findTagId(tag);
-			if (id) tagIds.push(id);
-			else {
+			console.log(id);
+			if (!id) {
 				const newTag = await new Tag({
 					text: tag,
 					color: randomColor({ luminosity: "light" }),
 				}).save();
 				tagIds.push(newTag._id);
+				continue;
 			}
+
+			tagIds.push(id);
 		}
 
 		const numberId = nanoNumbers();
