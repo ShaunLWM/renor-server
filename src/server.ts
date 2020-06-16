@@ -17,6 +17,7 @@ const db = new Database();
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static("public"));
 app.use("/upload", uploadRouter);
 app.use(`/${process.env.API_VERSION}`, apiRouter);
 
