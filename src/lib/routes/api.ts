@@ -31,7 +31,7 @@ apiRouter.get("/trending", async (req, res) => {
 				dims: media.dimens,
 				url: media.path,
 				preview: "",
-				size: 0,
+				size: media.size,
 			};
 		}
 
@@ -85,7 +85,7 @@ apiRouter.get("/search", async (req, res) => {
 				dims: media.dimens,
 				url: media.path,
 				preview: "",
-				size: 0,
+				size: media.size,
 			};
 		}
 
