@@ -5,7 +5,43 @@ import Tag, { ITag } from "../models/Tag";
 
 const apiRouter = express.Router();
 
-apiRouter.get("/search", async (req, res, next) => {
+apiRouter.get("/trending", async (req, res) => {
+	const gifs = await Gif.find({})
+		.populate("tags")
+		.sort({ _id: -1 })
+		.limit(20)
+		.exec();
+
+	const p = {
+		weburl: "trending",
+		results: [],
+	};
+
+	for (const gif of gifs) {
+		const ig = {
+			title: gif.title,
+			itemurl: gif.slug,
+			tags: gif.tags.map((tag: ITag) => tag.text),
+			media: {},
+		};
+
+		const medias = await Media.find({ gid: gif._id }).exec();
+		for (const media of medias) {
+			ig.media[media.format] = {
+				dims: media.dimens,
+				url: media.path,
+				preview: "",
+				size: 0,
+			};
+		}
+
+		p.results.push(ig);
+	}
+
+	return res.status(200).json(p);
+});
+
+apiRouter.get("/search", async (req, res) => {
 	const { key, q = "", media_filter = "default", limit = 10 } = req.query;
 	if (q.length < 1) return res.status(400).json({ msg: "Missing query q key" });
 	let maxLimit = parseInt(limit.toString(), 10);
