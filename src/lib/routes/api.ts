@@ -95,4 +95,44 @@ apiRouter.get("/search", async (req, res) => {
 	return res.status(200).json(p);
 });
 
+apiRouter.get("/", async (req, res) => {
+	const { slug = "", related = 0, full = 0 } = req.query;
+	if (slug.length < 1) return res.status(404).json({ msg: "Not found" });
+	const gif = await Gif.findOne({ slug: slug.toString() })
+		.populate("tags")
+		.exec();
+
+	const p = {
+		weburl: slug,
+		results: [],
+		related: [],
+	};
+
+	const tags = full
+		? gif.tags.map((tag: ITag) => {
+				return { text: tag.text, color: tag.color };
+		  })
+		: gif.tags.map((tag: ITag) => tag.text);
+
+	const ig = {
+		title: gif.title,
+		itemurl: gif.slug,
+		tags,
+		media: {},
+	};
+
+	const medias = await Media.find({ gid: gif._id }).exec();
+	for (const media of medias) {
+		ig.media[media.format] = {
+			dims: media.dimens,
+			url: media.path,
+			preview: "",
+			size: media.size,
+		};
+	}
+
+	p.results.push(ig);
+	return res.status(200).json(p);
+});
+
 export { apiRouter };
