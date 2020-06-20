@@ -108,11 +108,12 @@ apiRouter.get("/", async (req, res) => {
 		related: [],
 	};
 
-	const tags = full
-		? gif.tags.map((tag: ITag) => {
-				return { text: tag.text, color: tag.color };
-		  })
-		: gif.tags.map((tag: ITag) => tag.text);
+	const tags =
+		full === "1"
+			? gif.tags.map((tag: ITag) => {
+					return { text: tag.text, color: tag.color };
+			  })
+			: gif.tags.map((tag: ITag) => tag.text);
 
 	const ig = {
 		title: gif.title,
@@ -132,6 +133,40 @@ apiRouter.get("/", async (req, res) => {
 	}
 
 	p.results.push(ig);
+	if (related === "1") {
+		const relatedGifs = await Gif.find({})
+			.populate({
+				path: "tags",
+				match: {
+					text: {
+						$in: gif.tags.map((tag: ITag) => tag.text),
+					},
+				},
+			})
+			.limit(7)
+			.exec();
+
+		for (const gif of relatedGifs) {
+			const ig = {
+				title: gif.title,
+				itemurl: gif.slug,
+				tags, // TODO
+				media: {},
+			};
+
+			const medias = await Media.find({ gid: gif._id }).exec();
+			for (const media of medias) {
+				ig.media[media.format] = {
+					dims: media.dimens,
+					url: media.path,
+					preview: "",
+					size: media.size,
+				};
+			}
+
+			p.related.push(ig);
+		}
+	}
 	return res.status(200).json(p);
 });
 
