@@ -1,6 +1,6 @@
 import express from "express";
 import FileType from "file-type";
-import filenamifyUrl from "filenamify-url";
+import filenamify from "filenamify";
 import fs from "fs-extra";
 import { Schema } from "mongoose";
 import multer from "multer";
@@ -88,7 +88,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		const numberId = nanoNumbers();
 		const slug =
 			tags.length > 0
-				? `${filenamifyUrl(tags.join("-"))}-gif-${numberId}`
+				? `${filenamify(tags.join("-"))}-gif-${numberId}`
 				: `gif-${numberId}`;
 
 		const gif = await new Gif({
