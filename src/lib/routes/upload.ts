@@ -66,7 +66,8 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 	try {
 		if (!req.file) return next();
 		const { path: imageProcessedPath }: { path: string } = req.file;
-		const { tags = [] }: { tags: Array<string> } = req.body;
+		let { tags = [] }: { tags: Array<string> } = req.body;
+		if (!Array.isArray(tags)) tags = [tags];
 		const size = await getImageSize(imageProcessedPath);
 		const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
 		for (const tag of tags) {
