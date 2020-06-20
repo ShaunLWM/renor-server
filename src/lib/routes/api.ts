@@ -134,17 +134,10 @@ apiRouter.get("/", async (req, res) => {
 
 	p.results.push(ig);
 	if (related === "1") {
-		const relatedGifs = await Gif.find({})
-			.populate({
-				path: "tags",
-				match: {
-					text: {
-						$in: gif.tags.map((tag: ITag) => tag.text),
-					},
-				},
-			})
-			.limit(7)
-			.exec();
+		const relatedGifs = await Gif.filterTag({
+			tags: gif.tags.map((tag: ITag) => tag.text),
+			limit: 7,
+		});
 
 		for (const gif of relatedGifs) {
 			const ig = {

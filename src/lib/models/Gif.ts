@@ -25,4 +25,29 @@ export interface IGif extends Document {
 	tags: Array<ITag>;
 }
 
+GifSchema.statics.filterTag = function ({
+	tags,
+	limit = 7,
+}: {
+	tags: Array<string>;
+	limit: number;
+}) {
+	return this.aggregate([
+		{
+			$lookup: {
+				from: "tags",
+				localField: "tags",
+				foreignField: "_id",
+				as: "tags",
+			},
+		},
+		{
+			$unwind: "$tags",
+		},
+		{ $match: { "tags.text": { $in: tags } } },
+	])
+		.limit(limit)
+		.exec();
+};
+
 export default model<IGif>("Gif", GifSchema);
