@@ -102,7 +102,7 @@ apiRouter.get("/", async (req, res) => {
 		.populate("tags")
 		.exec();
 
-		// if (gif === null)
+	// if (gif === null)
 
 	const p = {
 		weburl: slug,
@@ -141,18 +141,15 @@ apiRouter.get("/", async (req, res) => {
 			limit: 7,
 		});
 
-		console.log(relatedGifs)
 		for (const gif of relatedGifs) {
-			console.log(gif._id)
 			const ig = {
 				title: gif.title,
 				itemurl: gif.slug,
-				tags: gif.tags.map((tag: ITag) => tag.text)
+				tags: gif.tags.map((tag: ITag) => tag.text),
 				media: {},
 			};
 
 			const medias = await Media.find({ gid: gif._id }).exec();
-			console.log(medias)
 			for (const media of medias) {
 				ig.media[media.format] = {
 					dims: media.dimens,
