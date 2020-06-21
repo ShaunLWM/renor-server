@@ -31,4 +31,15 @@ TagSchema.pre("save", async function (next) {
 	return next();
 });
 
+TagSchema.statics.findTag = async function (tag: string) {
+	const res = await this.findOne({
+		text: slugify(tag, {
+			lower: true,
+			strict: true,
+		}),
+	}).exec();
+	if (res === null) return false;
+	return res._id;
+};
+
 export default model<ITag>("Tag", TagSchema);

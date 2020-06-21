@@ -6,10 +6,15 @@ import Tag, { ITag } from "../models/Tag";
 const apiRouter = express.Router();
 
 apiRouter.get("/trending", async (req, res) => {
+	const { page, limit } = req.query;
+
+	let pageLimit = Math.abs(parseInt(limit.toString())) || 10;
+	let currentPage = (Math.abs(parseInt(page.toString())) || 1) - 1;
 	const gifs = await Gif.find({})
 		.populate("tags")
 		.sort({ _id: -1 })
-		.limit(20)
+		.skip(pageLimit * currentPage)
+		.limit(pageLimit)
 		.exec();
 
 	const p = {

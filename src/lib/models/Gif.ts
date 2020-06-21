@@ -4,7 +4,7 @@ import Tag, { ITag } from "./Tag";
 const GifSchema: Schema = new Schema({
 	title: {
 		type: String,
-		text: true,
+		required: true,
 	},
 	slug: {
 		type: String,
@@ -60,6 +60,9 @@ GifSchema.statics.filterTag = function ({
 				"tags._id": false,
 				"tags.__v": false,
 			},
+		},
+		{
+			$sample: { size: 10 },
 		},
 	])
 		.limit(limit)

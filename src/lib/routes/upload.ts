@@ -15,7 +15,6 @@ import {
 	ImageMaxDimensions,
 	resizeImage,
 } from "../FileProcessor";
-import { findTagId } from "../Helper";
 import Gif from "../models/Gif";
 import Media from "../models/Media";
 import Tag from "../models/Tag";
@@ -71,12 +70,11 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		const size = await getImageSize(imageProcessedPath);
 		const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
 		for (const tag of tags) {
-			const id = await findTagId(tag);
-			console.log(id);
+			const id = await Tag.findTag(tag);
 			if (!id) {
 				const newTag = await new Tag({
 					text: tag,
-					color: randomColor({ luminosity: "light" }),
+					color: randomColor({ luminosity: "dark" }),
 				}).save();
 				tagIds.push(newTag._id);
 				continue;
