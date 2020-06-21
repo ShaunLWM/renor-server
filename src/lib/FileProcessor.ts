@@ -132,17 +132,21 @@ const closestSizeRatio = ({
 
 	if (maxHeight !== 0) {
 		if (maxHeight > height) return { width, height };
+		let tempWidth = Math.round(((width * 1.0) / height) * maxHeight);
+		if (tempWidth % 2 === 1) tempWidth += 1;
 		return {
-			width: Math.round(((width * 1.0) / height) * maxHeight),
+			width: tempWidth,
 			height: maxHeight,
 		};
 	}
 
 	if (maxWidth !== 0) {
 		if (maxWidth > width) return { width, height };
+		let tempHeight = Math.round(((height * 1.0) / width) * maxWidth);
+		if (tempHeight % 2 === 1) tempHeight += 1;
 		return {
 			width: maxWidth,
-			height: Math.round(((height * 1.0) / width) * maxWidth),
+			height: tempHeight,
 		};
 	}
 };
