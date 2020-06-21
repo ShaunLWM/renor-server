@@ -1,5 +1,5 @@
 import { Document, model, Schema } from "mongoose";
-import { ITag } from "./Tag";
+import Tag, { ITag } from "./Tag";
 
 const GifSchema: Schema = new Schema({
 	title: {
@@ -35,16 +35,32 @@ GifSchema.statics.filterTag = function ({
 	return this.aggregate([
 		{
 			$lookup: {
-				from: "tags",
+				from: Tag.collection.name,
 				localField: "tags",
 				foreignField: "_id",
 				as: "tags",
 			},
 		},
 		{
-			$unwind: "$tags",
+			$match: {
+				"tags.text": { $in: tags },
+			},
 		},
-		{ $match: { "tags.text": { $in: tags } } },
+		{
+			$group: {
+				_id: "$_id",
+				title: { $first: "$title" },
+				slug: { $first: "$slug" },
+				tags: { $first: "$tags" },
+			},
+		},
+		{
+			$project: {
+				__v: false,
+				"tags._id": false,
+				"tags.__v": false,
+			},
+		},
 	])
 		.limit(limit)
 		.exec();
