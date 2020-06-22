@@ -28,9 +28,11 @@ export interface IGif extends Document {
 GifSchema.statics.filterTag = function ({
 	tags,
 	limit = 7,
+	ignore,
 }: {
 	tags: Array<string>;
 	limit: number;
+	ignore: Schema.Types.ObjectId;
 }) {
 	return this.aggregate([
 		{
@@ -43,7 +45,7 @@ GifSchema.statics.filterTag = function ({
 		},
 		{
 			$match: {
-				"tags.text": { $in: tags },
+				$and: [{ _id: { $ne: ignore } }, { "tags.text": { $in: tags } }],
 			},
 		},
 		{

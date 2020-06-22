@@ -16,7 +16,7 @@
 		"debug": "yarn build && yarn watch-debug",
 		"serve-debug": "nodemon --inspect dist/server.js",
 		"watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn serve-debug\"",
-		"local-db": "c: && tools/mongodb/current/bin/mongod --dbpath tools/mongodb/renor"
+		"localdb": "c: && tools/mongodb/current/bin/mongod --dbpath tools/mongodb/renor"
 	},
 	"dependencies": {
 		"body-parser": "^1.19.0",

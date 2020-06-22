@@ -6,9 +6,9 @@ import Tag, { ITag } from "../models/Tag";
 const apiRouter = express.Router();
 
 apiRouter.get("/trending", async (req, res) => {
-	const { page, limit } = req.query;
+	const { page = 1, limit = 20 } = req.query;
 
-	let pageLimit = Math.abs(parseInt(limit.toString())) || 10;
+	let pageLimit = Math.abs(parseInt(limit.toString())) || 20;
 	let currentPage = (Math.abs(parseInt(page.toString())) || 1) - 1;
 	const gifs = await Gif.find({})
 		.populate("tags")
@@ -144,6 +144,7 @@ apiRouter.get("/", async (req, res) => {
 		const relatedGifs = await Gif.filterTag({
 			tags: gif.tags.map((tag: ITag) => tag.text),
 			limit: 7,
+			ignore: gif._id,
 		});
 
 		for (const gif of relatedGifs) {
