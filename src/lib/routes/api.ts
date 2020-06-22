@@ -2,6 +2,7 @@ import express from "express";
 import Gif from "../models/Gif";
 import Media from "../models/Media";
 import Tag, { ITag } from "../models/Tag";
+import View from "../models/View";
 
 const apiRouter = express.Router();
 
@@ -51,6 +52,7 @@ apiRouter.get("/search", async (req, res) => {
 	if (q.length < 1) return res.status(400).json({ msg: "Missing query q key" });
 	let maxLimit = parseInt(limit.toString(), 10);
 	if (isNaN(maxLimit) || maxLimit < 0 || maxLimit > 99) maxLimit = 10;
+	await View.setTermSearched({ term: q });
 	const gifs = await Gif.aggregate([
 		{
 			$lookup: {

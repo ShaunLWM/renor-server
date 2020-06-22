@@ -12,10 +12,11 @@ const ViewSchema: Schema = new Schema({
 	count: {
 		type: Number,
 		required: true,
-		default: 0,
+		default: 1,
 	},
 	date: {
 		type: Date,
+		default: dayjs().startOf("day").toDate(),
 	},
 });
 
@@ -25,20 +26,28 @@ export interface IView extends Document {
 	date: Date;
 }
 
-ViewSchema.statics.findTermExist = async function ({ term }: { term: string }) {
+ViewSchema.statics.setTermSearched = async function ({
+	term,
+}: {
+	term: string;
+}) {
 	const currentDate = dayjs().startOf("day").toDate();
 	const nextDay = dayjs()
 		.add(1, "day")
 		.startOf("day")
 		.subtract(1, "second")
 		.toDate();
-	const views = await this.findOne({
-		term,
-		date: {
-			$gt: currentDate,
-			$lt: nextDay,
+	const views = await this.findOneAndUpdate(
+		{
+			term,
+			date: {
+				$gte: currentDate,
+				$lte: nextDay,
+			},
 		},
-	}).exec();
+		{ $inc: { count: 1 } },
+		{ upsert: true, new: true, setDefaultsOnInsert: true }
+	).exec();
 	return views;
 };
 
