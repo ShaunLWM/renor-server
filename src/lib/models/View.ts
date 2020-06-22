@@ -31,24 +31,22 @@ ViewSchema.statics.setTermSearched = async function ({
 }: {
 	term: string;
 }) {
-	const currentDate = dayjs().startOf("day").toDate();
-	const nextDay = dayjs()
-		.add(1, "day")
-		.startOf("day")
-		.subtract(1, "second")
-		.toDate();
-	const views = await this.findOneAndUpdate(
+	const currentDate = dayjs();
+	await this.findOneAndUpdate(
 		{
 			term,
 			date: {
-				$gte: currentDate,
-				$lte: nextDay,
+				$gte: currentDate.startOf("day").toDate(),
+				$lte: currentDate
+					.add(1, "day")
+					.startOf("day")
+					.subtract(1, "second")
+					.toDate(),
 			},
 		},
 		{ $inc: { count: 1 } },
 		{ upsert: true, new: true, setDefaultsOnInsert: true }
 	).exec();
-	return views;
 };
 
 export default model<IView>("View", ViewSchema);
