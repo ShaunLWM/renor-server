@@ -40,7 +40,7 @@ ViewSchema.statics.setTermSearched = async function ({
 	term,
 }: {
 	term: string;
-}) {
+}): Promise<void> {
 	const currentDate = dayjs();
 	await this.findOneAndUpdate(
 		{

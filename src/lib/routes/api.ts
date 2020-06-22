@@ -9,9 +9,8 @@ const apiRouter = express.Router();
 
 apiRouter.get("/trending", async (req, res) => {
 	const { page = 1, limit = 20 } = req.query;
-
-	let pageLimit = Math.abs(parseInt(limit.toString())) || 20;
-	let currentPage = (Math.abs(parseInt(page.toString())) || 1) - 1;
+	const pageLimit = Math.abs(Number(limit.toString())) || 20;
+	const currentPage = (Math.abs(Number(page.toString())) || 1) - 1;
 	const gifs = await Gif.find({})
 		.populate("tags")
 		.sort({ _id: -1 })
@@ -49,12 +48,29 @@ apiRouter.get("/trending", async (req, res) => {
 });
 
 apiRouter.get("/search", async (req, res) => {
-	const { key, q = "", media_filter = "default", limit = 10 } = req.query;
+	const {
+		key,
+		q = "",
+		media_filter = "default",
+		limit = 10,
+	} = (req.query as any) as {
+		key: string;
+		q: string;
+		media_filter: string;
+		limit: number;
+	};
+
 	if (q.length < 1) return res.status(400).json({ msg: "Missing query q key" });
-	let maxLimit = parseInt(limit.toString(), 10);
+	let maxLimit = Number(limit.toString());
 	if (isNaN(maxLimit) || maxLimit < 0 || maxLimit > 99) maxLimit = 10;
 	const searchTerm = decodeURIComponent(q.toString());
+	const slugSearchTerm = slugify(searchTerm, {
+		lower: true,
+		strict: true,
+	});
+
 	await View.setTermSearched({ term: searchTerm });
+	console.log([slugSearchTerm].concat(searchTerm.split(" ")));
 	const gifs = await Gif.aggregate([
 		{
 			$lookup: {
@@ -67,13 +83,7 @@ apiRouter.get("/search", async (req, res) => {
 		{
 			$match: {
 				"tags.text": {
-					$in: [
-						slugify(searchTerm, {
-							lower: true,
-							strict: true,
-						}),
-						searchTerm.split(" "),
-					],
+					$in: [slugSearchTerm].concat(searchTerm.split(" ")),
 				},
 			},
 		},
@@ -85,8 +95,23 @@ apiRouter.get("/search", async (req, res) => {
 				tags: { $first: "$tags" },
 			},
 		},
-	]).exec();
-
+		{
+			$project: {
+				_id: 1,
+				title: 1,
+				slug: 1,
+				tags: 1,
+				score: {
+					$cond: [{ $in: [slugSearchTerm, "$tags.text"] }, 1, 0],
+				},
+			},
+		},
+		{ $sort: { score: -1 } },
+	])
+		.limit(maxLimit)
+		.exec();
+	// console.log(JSON.stringify(gifs, null, 2));
+	require("fs").writeFileSync("./test.json", JSON.stringify(gifs, null, 2));
 	const p = {
 		weburl: encodeURIComponent(q.toString()),
 		results: [],

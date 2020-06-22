@@ -31,7 +31,9 @@ TagSchema.pre("save", async function (next) {
 	return next();
 });
 
-TagSchema.statics.findTag = async function (tag: string) {
+TagSchema.statics.findTag = async function (
+	tag: string
+): Promise<boolean | Schema.Types.ObjectId> {
 	const res = await this.findOne({
 		text: slugify(tag, {
 			lower: true,
