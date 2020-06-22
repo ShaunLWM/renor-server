@@ -67,7 +67,6 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 		const { path: imageProcessedPath }: { path: string } = req.file;
 		let { tags = [] }: { tags: Array<string> } = req.body;
 		if (!Array.isArray(tags)) tags = [tags];
-		const size = await getImageSize(imageProcessedPath);
 		const tagIds: Array<Schema.Types.ObjectId | boolean> = [];
 		for (const tag of tags) {
 			const id = await Tag.findTag(tag);
@@ -95,6 +94,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 			tags: tagIds,
 		}).save();
 
+		const size = await getImageSize(imageProcessedPath);
 		for (const [key, children] of Object.entries(ImageMaxDimensions)) {
 			for (const [mediaType, mediaValue] of Object.entries(children)) {
 				const uniqId = nanoid(32);

@@ -52,7 +52,8 @@ apiRouter.get("/search", async (req, res) => {
 	if (q.length < 1) return res.status(400).json({ msg: "Missing query q key" });
 	let maxLimit = parseInt(limit.toString(), 10);
 	if (isNaN(maxLimit) || maxLimit < 0 || maxLimit > 99) maxLimit = 10;
-	await View.setTermSearched({ term: q });
+	const searchTerm = decodeURIComponent(q.toString());
+	await View.setTermSearched({ term: searchTerm });
 	const gifs = await Gif.aggregate([
 		{
 			$lookup: {

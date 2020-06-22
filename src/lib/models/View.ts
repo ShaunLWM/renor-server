@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { Document, model, Schema } from "mongoose";
+import slugify from "slugify";
 
 const ViewSchema: Schema = new Schema({
 	term: {
@@ -25,6 +26,15 @@ export interface IView extends Document {
 	count: number;
 	date: Date;
 }
+
+ViewSchema.pre("save", async function (next) {
+	this.term = slugify(this.term, {
+		lower: true,
+		strict: true,
+	});
+
+	return next();
+});
 
 ViewSchema.statics.setTermSearched = async function ({
 	term,
