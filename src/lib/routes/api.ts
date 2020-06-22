@@ -1,4 +1,5 @@
 import express from "express";
+import slugify from "slugify";
 import Gif from "../models/Gif";
 import Media from "../models/Media";
 import Tag, { ITag } from "../models/Tag";
@@ -63,7 +64,19 @@ apiRouter.get("/search", async (req, res) => {
 				as: "tags",
 			},
 		},
-		{ $match: { "tags.text": { $in: [q.toString()] } } },
+		{
+			$match: {
+				"tags.text": {
+					$in: [
+						slugify(searchTerm, {
+							lower: true,
+							strict: true,
+						}),
+						searchTerm.split(" "),
+					],
+				},
+			},
+		},
 		{
 			$group: {
 				_id: "$_id",
