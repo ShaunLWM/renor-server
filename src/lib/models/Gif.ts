@@ -1,5 +1,7 @@
 import { Document, model, Model, Schema } from "mongoose";
 import { AggregationType } from "../types/Aggr";
+import { MediaParentType } from "../types/MediaAPI";
+import Media from "./Media";
 import Tag, { ITagDocument } from "./Tag";
 
 const GifSchema: Schema = new Schema({
@@ -40,6 +42,12 @@ export interface IGifModel extends Model<IGifDocument> {
 		mainTag?: string;
 		randomSize?: number;
 	}): Promise<Array<IGifDocument>>;
+
+	getMedias({
+		gifId,
+	}: {
+		gifId: Schema.Types.ObjectId;
+	}): Promise<MediaParentType>;
 }
 
 GifSchema.statics.searchTag = async function ({
@@ -111,6 +119,25 @@ GifSchema.statics.searchTag = async function ({
 	const gifs = this.aggregate(aggr);
 	if (limit > 0) gifs.limit(limit);
 	return gifs.exec();
+};
+
+GifSchema.statics.getMedias = async function ({
+	gifId,
+}: {
+	gifId: Schema.Types.ObjectId;
+}): Promise<MediaParentType> {
+	const arr: MediaParentType = {};
+	const medias = await Media.find({ gid: gifId }).exec();
+	for (const media of medias) {
+		arr[media.format] = {
+			dims: media.dimens,
+			url: media.path,
+			preview: "",
+			size: media.size,
+		};
+	}
+
+	return arr;
 };
 
 export default model<IGifDocument, IGifModel>("Gif", GifSchema);

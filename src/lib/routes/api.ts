@@ -1,14 +1,12 @@
 import express from "express";
 import slugify from "slugify";
 import Gif from "../models/Gif";
-import Media from "../models/Media";
 import { ITagDocument } from "../models/Tag";
 import View from "../models/View";
 import {
 	APIResultRelated,
 	APIResultType,
 	GifResultType,
-	MediaParentType,
 } from "../types/MediaAPI";
 
 const apiRouter = express.Router();
@@ -30,22 +28,13 @@ apiRouter.get("/trending", async (req, res) => {
 	};
 
 	for (const gif of gifs) {
+		const medias = await Gif.getMedias({ gifId: gif._id });
 		const ig: GifResultType = {
 			title: gif.title,
 			itemurl: gif.slug,
 			tags: gif.tags.map((tag: ITagDocument) => tag.text),
-			media: {} as MediaParentType,
+			media: [medias],
 		};
-
-		const medias = await Media.find({ gid: gif._id }).exec();
-		for (const media of medias) {
-			ig.media[media.format] = {
-				dims: media.dimens,
-				url: media.path,
-				preview: "",
-				size: media.size,
-			};
-		}
 
 		p.results.push(ig);
 	}
@@ -88,22 +77,13 @@ apiRouter.get("/search", async (req, res) => {
 	};
 
 	for (const gif of gifs) {
+		const medias = await Gif.getMedias({ gifId: gif._id });
 		const ig = {
 			title: gif.title,
 			itemurl: gif.slug,
 			tags: gif.tags.map((tag: ITagDocument) => tag.text),
-			media: {} as MediaParentType,
+			media: [medias],
 		};
-
-		const medias = await Media.find({ gid: gif._id }).exec();
-		for (const media of medias) {
-			ig.media[media.format] = {
-				dims: media.dimens,
-				url: media.path,
-				preview: "",
-				size: media.size,
-			};
-		}
 
 		p.results.push(ig);
 	}
@@ -133,22 +113,13 @@ apiRouter.get("/", async (req, res) => {
 			  })
 			: gif.tags.map((tag: ITagDocument) => tag.text);
 
+	const medias = await Gif.getMedias({ gifId: gif._id });
 	const ig: GifResultType = {
 		title: gif.title,
 		itemurl: gif.slug,
 		tags,
-		media: {},
+		media: [medias],
 	};
-
-	const medias = await Media.find({ gid: gif._id }).exec();
-	for (const media of medias) {
-		ig.media[media.format] = {
-			dims: media.dimens,
-			url: media.path,
-			preview: "",
-			size: media.size,
-		};
-	}
 
 	p.results.push(ig);
 	if (related === "1") {
@@ -160,22 +131,13 @@ apiRouter.get("/", async (req, res) => {
 		});
 
 		for (const gif of relatedGifs) {
+			const medias = await Gif.getMedias({ gifId: gif._id });
 			const ig: GifResultType = {
 				title: gif.title,
 				itemurl: gif.slug,
 				tags: gif.tags.map((tag: ITagDocument) => tag.text),
-				media: {},
+				media: [medias],
 			};
-
-			const medias = await Media.find({ gid: gif._id }).exec();
-			for (const media of medias) {
-				ig.media[media.format] = {
-					dims: media.dimens,
-					url: media.path,
-					preview: "",
-					size: media.size,
-				};
-			}
 
 			p.related.push(ig);
 		}

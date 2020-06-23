@@ -11,7 +11,7 @@ export interface GifResultType {
 	title: string;
 	itemurl: string;
 	tags: Array<string> | Array<{ text: string; color: string }>;
-	media: MediaParentType;
+	media: Array<MediaParentType>;
 }
 
 export interface MediaParentType {
