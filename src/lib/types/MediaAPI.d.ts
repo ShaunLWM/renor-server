@@ -3,11 +3,9 @@ export interface APIResultType {
 	results: Array<GifResultType>;
 }
 
-export interface RelatedArr {
+export interface APIResultRelated extends APIResultType {
 	related?: Array<GifResultType>;
 }
-
-export type APIResultRelated = APIResultType & RelatedArr;
 
 export interface GifResultType {
 	title: string;
