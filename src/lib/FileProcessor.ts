@@ -149,6 +149,8 @@ const closestSizeRatio = ({
 			height: tempHeight,
 		};
 	}
+
+	throw new Error("Error getting ratio. Check parameters");
 };
 
 const resizeImage = async ({
@@ -184,7 +186,7 @@ const resizeImage = async ({
 	}
 
 	const image = await gifResize(opts)(buf);
-	fs.writeFileSync(output, image);
+	return fs.writeFileSync(output, image);
 };
 
 const convertToMp4 = async ({
@@ -221,7 +223,7 @@ const convertToMp4 = async ({
 
 		return true;
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 		return false;
 	}
 };
@@ -229,6 +231,29 @@ const convertToMp4 = async ({
 const getFileSize = (path: string) => {
 	const stats = fs.statSync(path);
 	return stats.size;
+};
+
+const generateScreenshot = async ({
+	path,
+	output,
+}: {
+	path: string;
+	output: string;
+}): Promise<boolean> => {
+	try {
+		const { stdout } = await execa("ffmpeg", [
+			"-i",
+			path,
+			"-vframes",
+			"1",
+			output,
+		]);
+
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 };
 
 export {
