@@ -27,6 +27,10 @@ export interface IViewDocument extends Document {
 	date: Date;
 }
 
+export interface IViewModel extends Model<IViewDocument> {
+	setTermSearched({ term }: { term: string }): Promise<void>;
+}
+
 ViewSchema.pre<IViewDocument>("save", async function (next) {
 	this.term = slugify(this.term, {
 		lower: true,
@@ -58,9 +62,5 @@ ViewSchema.statics.setTermSearched = async function ({
 		{ upsert: true, new: true, setDefaultsOnInsert: true }
 	).exec();
 };
-
-export interface IViewModel extends Model<IViewDocument> {
-	setTermSearched({ term }: { term: string }): Promise<void>;
-}
 
 export default model<IViewDocument, IViewModel>("View", ViewSchema);

@@ -25,6 +25,18 @@ export interface IGifDocument extends Document {
 	tags: Array<ITagDocument>;
 }
 
+export interface IGifModel extends Model<IGifDocument> {
+	filterTag({
+		tags,
+		limit,
+		ignore,
+	}: {
+		tags: Array<string>;
+		limit: number;
+		ignore: Schema.Types.ObjectId;
+	}): Promise<Array<IGifDocument>>;
+}
+
 GifSchema.statics.filterTag = function ({
 	tags,
 	limit = 7,
@@ -70,17 +82,5 @@ GifSchema.statics.filterTag = function ({
 		.limit(limit)
 		.exec();
 };
-
-export interface IGifModel extends Model<IGifDocument> {
-	filterTag({
-		tags,
-		limit,
-		ignore,
-	}: {
-		tags: Array<string>;
-		limit: number;
-		ignore: Schema.Types.ObjectId;
-	}): Promise<Array<IGifDocument>>;
-}
 
 export default model<IGifDocument, IGifModel>("Gif", GifSchema);

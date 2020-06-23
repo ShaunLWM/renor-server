@@ -22,6 +22,10 @@ export interface ITagDocument extends Document {
 	color: string;
 }
 
+export interface ITagModel extends Model<ITagDocument> {
+	findTag(tag: string): Promise<boolean | Schema.Types.ObjectId>;
+}
+
 TagSchema.pre<ITagDocument>("save", async function (next) {
 	this.text = slugify(this.text, {
 		lower: true,
@@ -43,9 +47,5 @@ TagSchema.statics.findTag = async function (
 	if (res === null) return false;
 	return res._id;
 };
-
-export interface ITagModel extends Model<ITagDocument> {
-	findTag(tag: string): Promise<boolean | Schema.Types.ObjectId>;
-}
 
 export default model<ITagDocument, ITagModel>("Tag", TagSchema);
