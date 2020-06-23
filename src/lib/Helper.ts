@@ -39,4 +39,10 @@ const getExtFromKey = (key: string): string => {
 	}
 };
 
-export { checkFfmpegExist, findTagId, getExtFromKey };
+const buildImgUrl = (path: string, format: string): string => {
+	return `${process.env.BASE_URL}:${
+		process.env.SERVER_PORT
+	}/img/${path}/tenor.${getExtFromKey(format)}`;
+};
+
+export { checkFfmpegExist, findTagId, getExtFromKey, buildImgUrl };
