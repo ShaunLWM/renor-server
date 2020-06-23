@@ -1,4 +1,5 @@
 import { Document, model, Model, Schema } from "mongoose";
+import { AggregationType } from "../types/Aggr";
 import Tag, { ITagDocument } from "./Tag";
 
 const GifSchema: Schema = new Schema({
@@ -26,27 +27,35 @@ export interface IGifDocument extends Document {
 }
 
 export interface IGifModel extends Model<IGifDocument> {
-	filterTag({
+	searchTag({
 		tags,
 		limit,
 		ignore,
+		mainTag,
+		randomSize,
 	}: {
 		tags: Array<string>;
 		limit: number;
-		ignore: Schema.Types.ObjectId;
+		ignore?: any;
+		mainTag?: string;
+		randomSize?: number;
 	}): Promise<Array<IGifDocument>>;
 }
 
-GifSchema.statics.filterTag = function ({
+GifSchema.statics.searchTag = async function ({
 	tags,
-	limit = 7,
-	ignore,
+	limit = 0,
+	ignore = null,
+	mainTag = "",
+	randomSize = 0,
 }: {
+	mainTag: string;
 	tags: Array<string>;
 	limit: number;
-	ignore: Schema.Types.ObjectId;
+	ignore: any;
+	randomSize: number;
 }): Promise<Array<IGifDocument>> {
-	return this.aggregate([
+	const aggr: Array<AggregationType> = [
 		{
 			$lookup: {
 				from: Tag.collection.name,
@@ -55,32 +64,53 @@ GifSchema.statics.filterTag = function ({
 				as: "tags",
 			},
 		},
-		{
+	];
+
+	if (ignore !== null)
+		aggr.push({
 			$match: {
 				$and: [{ _id: { $ne: ignore } }, { "tags.text": { $in: tags } }],
 			},
+		});
+	else
+		aggr.push({
+			$match: { "tags.text": { $in: tags } },
+		});
+
+	aggr.push({
+		$group: {
+			_id: "$_id",
+			title: { $first: "$title" },
+			slug: { $first: "$slug" },
+			tags: { $first: "$tags" },
 		},
-		{
-			$group: {
-				_id: "$_id",
-				title: { $first: "$title" },
-				slug: { $first: "$slug" },
-				tags: { $first: "$tags" },
+	});
+
+	if (mainTag.length > 0) {
+		aggr.push({
+			$addFields: {
+				score: {
+					$cond: [{ $in: [mainTag, "$tags.text"] }, 1, 0],
+				},
 			},
+		});
+
+		aggr.push({ $sort: { score: -1 } });
+	}
+
+	aggr.push({
+		$project: {
+			__v: 0,
+			"tags._id": 0,
+			"tags.__v": 0,
+			score: 0,
 		},
-		{
-			$project: {
-				__v: false,
-				"tags._id": false,
-				"tags.__v": false,
-			},
-		},
-		{
-			$sample: { size: 10 },
-		},
-	])
-		.limit(limit)
-		.exec();
+	});
+
+	if (randomSize > 0) aggr.push({ $sample: { size: 10 } });
+	const gifs = this.aggregate(aggr);
+	if (limit > 0) gifs.limit(limit);
+	return gifs.exec();
 };
 
 export default model<IGifDocument, IGifModel>("Gif", GifSchema);

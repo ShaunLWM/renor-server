@@ -2,7 +2,7 @@ import express from "express";
 import slugify from "slugify";
 import Gif from "../models/Gif";
 import Media from "../models/Media";
-import Tag, { ITagDocument } from "../models/Tag";
+import { ITagDocument } from "../models/Tag";
 import View from "../models/View";
 import {
 	APIResultRelated,
@@ -76,46 +76,11 @@ apiRouter.get("/search", async (req, res) => {
 	});
 
 	await View.setTermSearched({ term: searchTerm });
-	console.log([slugSearchTerm].concat(searchTerm.split(" ")));
-	const gifs = await Gif.aggregate([
-		{
-			$lookup: {
-				from: Tag.collection.name,
-				localField: "tags",
-				foreignField: "_id",
-				as: "tags",
-			},
-		},
-		{
-			$match: {
-				"tags.text": {
-					$in: [slugSearchTerm].concat(searchTerm.split(" ")),
-				},
-			},
-		},
-		{
-			$group: {
-				_id: "$_id",
-				title: { $first: "$title" },
-				slug: { $first: "$slug" },
-				tags: { $first: "$tags" },
-			},
-		},
-		{
-			$project: {
-				_id: 1,
-				title: 1,
-				slug: 1,
-				tags: 1,
-				score: {
-					$cond: [{ $in: [slugSearchTerm, "$tags.text"] }, 1, 0],
-				},
-			},
-		},
-		{ $sort: { score: -1 } },
-	])
-		.limit(maxLimit)
-		.exec();
+	const gifs = await Gif.searchTag({
+		mainTag: slugSearchTerm,
+		tags: [slugSearchTerm].concat(searchTerm.split(" ")),
+		limit: 7,
+	});
 
 	const p: APIResultType = {
 		weburl: encodeURIComponent(q.toString()),
@@ -187,10 +152,11 @@ apiRouter.get("/", async (req, res) => {
 
 	p.results.push(ig);
 	if (related === "1") {
-		const relatedGifs = await Gif.filterTag({
+		const relatedGifs = await Gif.searchTag({
 			tags: gif.tags.map((tag: ITagDocument) => tag.text),
 			limit: 7,
 			ignore: gif._id,
+			randomSize: 10,
 		});
 
 		for (const gif of relatedGifs) {
