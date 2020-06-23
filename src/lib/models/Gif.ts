@@ -1,4 +1,5 @@
 import { Document, model, Model, Schema } from "mongoose";
+import { getExtFromKey } from "../Helper";
 import { AggregationType } from "../types/Aggr";
 import { MediaParentType } from "../types/MediaAPI";
 import Media from "./Media";
@@ -131,7 +132,9 @@ GifSchema.statics.getMedias = async function ({
 	for (const media of medias) {
 		arr[media.format] = {
 			dims: media.dimens,
-			url: media.path,
+			url: `${process.env.BASE_URL}:${process.env.SERVER_PORT}/img/${
+				media.path
+			}/tenor.${getExtFromKey(media.format)}`,
 			preview: "",
 			size: media.size,
 		};

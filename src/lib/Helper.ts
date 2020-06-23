@@ -20,4 +20,23 @@ const findTagId = async (
 	return res._id;
 };
 
-export { checkFfmpegExist, findTagId };
+const getExtFromKey = (key: string): string => {
+	switch (key) {
+		case "gif":
+		case "mediumgif":
+		case "tinygif":
+		case "nanogif":
+			return "gif";
+		case "mp4":
+		case "loopedmp4":
+		case "tinymp4":
+		case "nanomp4":
+			return "mp4";
+		case "webm":
+		case "tinywebm":
+		case "nanowebm":
+			return "webm";
+	}
+};
+
+export { checkFfmpegExist, findTagId, getExtFromKey };
