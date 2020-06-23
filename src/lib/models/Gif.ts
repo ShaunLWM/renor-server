@@ -1,5 +1,5 @@
-import { Document, model, Schema } from "mongoose";
-import Tag, { ITag } from "./Tag";
+import { Document, model, Model, Schema } from "mongoose";
+import Tag, { ITagDocument } from "./Tag";
 
 const GifSchema: Schema = new Schema({
 	title: {
@@ -19,10 +19,10 @@ const GifSchema: Schema = new Schema({
 	],
 });
 
-export interface IGif extends Document {
+export interface IGifDocument extends Document {
 	title: string;
 	slug: string;
-	tags: Array<ITag>;
+	tags: Array<ITagDocument>;
 }
 
 GifSchema.statics.filterTag = function ({
@@ -33,7 +33,7 @@ GifSchema.statics.filterTag = function ({
 	tags: Array<string>;
 	limit: number;
 	ignore: Schema.Types.ObjectId;
-}) {
+}): Promise<Array<IGifDocument>> {
 	return this.aggregate([
 		{
 			$lookup: {
@@ -71,4 +71,16 @@ GifSchema.statics.filterTag = function ({
 		.exec();
 };
 
-export default model<IGif>("Gif", GifSchema);
+export interface IGifModel extends Model<IGifDocument> {
+	filterTag({
+		tags,
+		limit,
+		ignore,
+	}: {
+		tags: Array<string>;
+		limit: number;
+		ignore: Schema.Types.ObjectId;
+	}): Promise<Array<IGifDocument>>;
+}
+
+export default model<IGifDocument, IGifModel>("Gif", GifSchema);

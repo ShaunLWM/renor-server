@@ -1,4 +1,4 @@
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Model, Schema } from "mongoose";
 import slugify from "slugify";
 
 const TagSchema: Schema = new Schema({
@@ -17,12 +17,12 @@ const TagSchema: Schema = new Schema({
 	},
 });
 
-export interface ITag extends Document {
+export interface ITagDocument extends Document {
 	text: string;
 	color: string;
 }
 
-TagSchema.pre("save", async function (next) {
+TagSchema.pre<ITagDocument>("save", async function (next) {
 	this.text = slugify(this.text, {
 		lower: true,
 		strict: true,
@@ -44,4 +44,8 @@ TagSchema.statics.findTag = async function (
 	return res._id;
 };
 
-export default model<ITag>("Tag", TagSchema);
+export interface ITagModel extends Model<ITagDocument> {
+	findTag(tag: string): Promise<boolean | Schema.Types.ObjectId>;
+}
+
+export default model<ITagDocument, ITagModel>("Tag", TagSchema);

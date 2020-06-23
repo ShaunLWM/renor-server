@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Document, model, Schema } from "mongoose";
+import { Document, model, Model, Schema } from "mongoose";
 import slugify from "slugify";
 
 const ViewSchema: Schema = new Schema({
@@ -21,13 +21,13 @@ const ViewSchema: Schema = new Schema({
 	},
 });
 
-export interface IView extends Document {
+export interface IViewDocument extends Document {
 	term: string;
 	count: number;
 	date: Date;
 }
 
-ViewSchema.pre("save", async function (next) {
+ViewSchema.pre<IViewDocument>("save", async function (next) {
 	this.term = slugify(this.term, {
 		lower: true,
 		strict: true,
@@ -59,4 +59,8 @@ ViewSchema.statics.setTermSearched = async function ({
 	).exec();
 };
 
-export default model<IView>("View", ViewSchema);
+export interface IViewModel extends Model<IViewDocument> {
+	setTermSearched({ term }: { term: string }): Promise<void>;
+}
+
+export default model<IViewDocument, IViewModel>("View", ViewSchema);

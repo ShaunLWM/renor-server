@@ -2,8 +2,14 @@ import express from "express";
 import slugify from "slugify";
 import Gif from "../models/Gif";
 import Media from "../models/Media";
-import Tag, { ITag } from "../models/Tag";
+import Tag, { ITagDocument } from "../models/Tag";
 import View from "../models/View";
+import {
+	APIResultRelated,
+	APIResultType,
+	GifResultType,
+	MediaParentType,
+} from "../types/MediaAPI";
 
 const apiRouter = express.Router();
 
@@ -18,17 +24,17 @@ apiRouter.get("/trending", async (req, res) => {
 		.limit(pageLimit)
 		.exec();
 
-	const p = {
+	const p: APIResultType = {
 		weburl: "trending",
 		results: [],
 	};
 
 	for (const gif of gifs) {
-		const ig = {
+		const ig: GifResultType = {
 			title: gif.title,
 			itemurl: gif.slug,
-			tags: gif.tags.map((tag: ITag) => tag.text),
-			media: {},
+			tags: gif.tags.map((tag: ITagDocument) => tag.text),
+			media: {} as MediaParentType,
 		};
 
 		const medias = await Media.find({ gid: gif._id }).exec();
@@ -110,9 +116,8 @@ apiRouter.get("/search", async (req, res) => {
 	])
 		.limit(maxLimit)
 		.exec();
-	// console.log(JSON.stringify(gifs, null, 2));
-	require("fs").writeFileSync("./test.json", JSON.stringify(gifs, null, 2));
-	const p = {
+
+	const p: APIResultType = {
 		weburl: encodeURIComponent(q.toString()),
 		results: [],
 	};
@@ -121,8 +126,8 @@ apiRouter.get("/search", async (req, res) => {
 		const ig = {
 			title: gif.title,
 			itemurl: gif.slug,
-			tags: gif.tags.map((tag: ITag) => tag.text),
-			media: {},
+			tags: gif.tags.map((tag: ITagDocument) => tag.text),
+			media: {} as MediaParentType,
 		};
 
 		const medias = await Media.find({ gid: gif._id }).exec();
@@ -150,20 +155,20 @@ apiRouter.get("/", async (req, res) => {
 
 	// if (gif === null)
 
-	const p = {
-		weburl: slug,
+	const p: APIResultRelated = {
+		weburl: slug.toString(),
 		results: [],
 		related: [],
 	};
 
 	const tags =
 		full === "1"
-			? gif.tags.map((tag: ITag) => {
+			? gif.tags.map((tag: ITagDocument) => {
 					return { text: tag.text, color: tag.color };
 			  })
-			: gif.tags.map((tag: ITag) => tag.text);
+			: gif.tags.map((tag: ITagDocument) => tag.text);
 
-	const ig = {
+	const ig: GifResultType = {
 		title: gif.title,
 		itemurl: gif.slug,
 		tags,
@@ -183,16 +188,16 @@ apiRouter.get("/", async (req, res) => {
 	p.results.push(ig);
 	if (related === "1") {
 		const relatedGifs = await Gif.filterTag({
-			tags: gif.tags.map((tag: ITag) => tag.text),
+			tags: gif.tags.map((tag: ITagDocument) => tag.text),
 			limit: 7,
 			ignore: gif._id,
 		});
 
 		for (const gif of relatedGifs) {
-			const ig = {
+			const ig: GifResultType = {
 				title: gif.title,
 				itemurl: gif.slug,
-				tags: gif.tags.map((tag: ITag) => tag.text),
+				tags: gif.tags.map((tag: ITagDocument) => tag.text),
 				media: {},
 			};
 
