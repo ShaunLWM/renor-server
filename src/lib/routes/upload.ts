@@ -10,6 +10,7 @@ import slugify from "slugify";
 import {
 	closestSizeRatio,
 	convertToMp4,
+	generateScreenshot,
 	getFileSize,
 	getImageSize,
 	ImageMaxDimensions,
@@ -147,6 +148,11 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 						});
 						break;
 				}
+
+				await generateScreenshot({
+					path: output,
+					output: path.join(finalPath, "tenor.jpg"),
+				});
 
 				if (output.length > 0) {
 					await new Media({
