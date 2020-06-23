@@ -133,7 +133,7 @@ GifSchema.statics.getMedias = async function ({
 		arr[media.format] = {
 			dims: media.dimens,
 			url: buildImgUrl(media.path, media.format),
-			preview: "",
+			preview: buildImgUrl(media.path, "jpg"),
 			size: media.size,
 		};
 	}

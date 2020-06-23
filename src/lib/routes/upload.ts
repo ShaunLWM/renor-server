@@ -149,12 +149,12 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 						break;
 				}
 
-				await generateScreenshot({
-					path: output,
-					output: path.join(finalPath, "tenor.jpg"),
-				});
-
 				if (output.length > 0) {
+					await generateScreenshot({
+						path: output,
+						output: path.join(finalPath, "tenor.jpg"),
+					});
+
 					await new Media({
 						gid: gif._id,
 						path: uniqId,

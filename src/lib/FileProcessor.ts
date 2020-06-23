@@ -266,4 +266,5 @@ export {
 	convertToMp4,
 	MediaFilter,
 	getFileSize,
+	generateScreenshot,
 };

@@ -36,6 +36,8 @@ const getExtFromKey = (key: string): string => {
 		case "tinywebm":
 		case "nanowebm":
 			return "webm";
+		case "jpg":
+			return "jpg";
 	}
 };
 
