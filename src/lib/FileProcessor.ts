@@ -85,31 +85,17 @@ const getImageSize = async (
 ): Promise<{
 	height: number;
 	width: number;
-	type: string;
-	orientation: ImageOrientation;
 }> => {
 	const size = await sizeOf(path);
 	return {
-		...size,
-		orientation: getImageOrientation(size),
+		height: normalizeInteger(size.height),
+		width: normalizeInteger(size.width),
 	};
 };
 
-enum ImageOrientation {
-	PORTRAIT,
-	LANDSCAPE,
-}
-
-const getImageOrientation = ({
-	height,
-	width,
-}: {
-	height: number;
-	width: number;
-}) => {
-	return height > width
-		? ImageOrientation.PORTRAIT
-		: ImageOrientation.LANDSCAPE;
+const normalizeInteger = (value: number): number => {
+	if (value % 2 === 1) value += 1;
+	return value;
 };
 
 const closestSizeRatio = ({
@@ -128,25 +114,34 @@ const closestSizeRatio = ({
 
 	if (maxHeight !== 0 && maxWidth !== 0)
 		// shouldn't be the case
-		return { height: maxHeight, width: maxWidth };
+		return {
+			height: normalizeInteger(maxHeight),
+			width: normalizeInteger(maxWidth),
+		};
 
 	if (maxHeight !== 0) {
-		if (maxHeight > height) return { width, height };
-		let tempWidth = Math.round(((width * 1.0) / height) * maxHeight);
-		if (tempWidth % 2 === 1) tempWidth += 1;
+		if (maxHeight > height)
+			return {
+				width: normalizeInteger(width),
+				height: normalizeInteger(height),
+			};
+
 		return {
-			width: tempWidth,
+			width: normalizeInteger(Math.round(((width * 1.0) / height) * maxHeight)),
 			height: maxHeight,
 		};
 	}
 
 	if (maxWidth !== 0) {
-		if (maxWidth > width) return { width, height };
-		let tempHeight = Math.round(((height * 1.0) / width) * maxWidth);
-		if (tempHeight % 2 === 1) tempHeight += 1;
+		if (maxWidth > width)
+			return {
+				width: normalizeInteger(width),
+				height: normalizeInteger(height),
+			};
+
 		return {
 			width: maxWidth,
-			height: tempHeight,
+			height: normalizeInteger(Math.round(((height * 1.0) / width) * maxWidth)),
 		};
 	}
 
@@ -205,9 +200,11 @@ const convertToMp4 = async ({
 		if (newWidth === 0 && newHeight === 0)
 			throw new Error("Width or height must be set");
 		if (newWidth !== 0 && newHeight !== 0)
-			scale = `scale=${newWidth}:${newHeight}`;
-		else if (newHeight === 0) scale = `scale=${newWidth}:-2`;
-		else if (newWidth === 0) scale = `scale=-2:${newHeight}`;
+			scale = `scale=${normalizeInteger(newWidth)}:${normalizeInteger(
+				newHeight
+			)}`;
+		else if (newHeight === 0) scale = `scale=${normalizeInteger(newWidth)}:-2`;
+		else if (newWidth === 0) scale = `scale=-2:${normalizeInteger(newHeight)}`;
 
 		const { stdout } = await execa("ffmpeg", [
 			"-i",
@@ -260,8 +257,6 @@ export {
 	getImageSize,
 	resizeImage,
 	closestSizeRatio,
-	getImageOrientation,
-	ImageOrientation,
 	ImageMaxDimensions,
 	convertToMp4,
 	MediaFilter,
