@@ -42,9 +42,13 @@ const getExtFromKey = (key: string): string => {
 };
 
 const buildImgUrl = (path: string, format: string): string => {
-	return `${process.env.BASE_URL}:${
-		process.env.SERVER_PORT
-	}/img/${path}/tenor.${getExtFromKey(format)}`;
+	return `${process.env.BASE_URL}/img/${path}/tenor.${getExtFromKey(format)}`;
 };
 
-export { checkFfmpegExist, findTagId, getExtFromKey, buildImgUrl };
+const addZeros = (num: number): string => {
+	const dec = num.toString().split(".")[1];
+	const len = dec && dec.length > 2 ? dec.length : 2;
+	return Number(num).toFixed(len);
+};
+
+export { checkFfmpegExist, findTagId, getExtFromKey, buildImgUrl, addZeros };

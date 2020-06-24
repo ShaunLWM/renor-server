@@ -27,7 +27,7 @@ const GifSchema: Schema = new Schema(
 			},
 		],
 	},
-	{ timestamps: { createdAt: true } }
+	{ timestamps: true }
 );
 
 export interface IGifDocument extends Document {
@@ -38,6 +38,7 @@ export interface IGifDocument extends Document {
 		duration: number;
 		dimens: Array<Number>;
 	};
+	createdAt: Date;
 }
 
 export interface IGifModel extends Model<IGifDocument> {

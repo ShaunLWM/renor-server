@@ -1,5 +1,6 @@
 import express from "express";
 import slugify from "slugify";
+import { addZeros } from "../Helper";
 import Gif from "../models/Gif";
 import { ITagDocument } from "../models/Tag";
 import View from "../models/View";
@@ -118,7 +119,12 @@ apiRouter.get("/", async (req, res) => {
 		title: gif.title,
 		itemurl: gif.slug,
 		tags,
+		details: {
+			dimens: gif.details.dimens,
+			duration: addZeros(gif.details.duration),
+		},
 		media: [medias],
+		createdAt: gif.createdAt,
 	};
 
 	p.results.push(ig);
