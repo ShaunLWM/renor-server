@@ -98,7 +98,7 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 			tags: tagIds,
 			details: {
 				duration,
-				dimens: [size.height, size.width],
+				dimens: [size.width, size.height],
 			},
 		}).save();
 
