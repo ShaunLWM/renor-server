@@ -5,28 +5,39 @@ import { MediaParentType } from "../types/MediaAPI";
 import Media from "./Media";
 import Tag, { ITagDocument } from "./Tag";
 
-const GifSchema: Schema = new Schema({
-	title: {
-		type: String,
-		required: true,
-	},
-	slug: {
-		type: String,
-		required: true,
-		lowercase: true,
-	},
-	tags: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "Tag",
+const GifSchema: Schema = new Schema(
+	{
+		title: {
+			type: String,
+			required: true,
 		},
-	],
-});
+		slug: {
+			type: String,
+			required: true,
+			lowercase: true,
+		},
+		details: {
+			duration: { type: Number, default: 0 },
+			dimens: [{ type: Number }],
+		},
+		tags: [
+			{
+				type: Schema.Types.ObjectId,
+				ref: "Tag",
+			},
+		],
+	},
+	{ timestamps: { createdAt: true } }
+);
 
 export interface IGifDocument extends Document {
 	title: string;
 	slug: string;
 	tags: Array<ITagDocument>;
+	details: {
+		duration: number;
+		dimens: Array<Number>;
+	};
 }
 
 export interface IGifModel extends Model<IGifDocument> {

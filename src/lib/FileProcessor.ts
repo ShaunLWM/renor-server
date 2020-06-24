@@ -253,13 +253,32 @@ const generateScreenshot = async ({
 	}
 };
 
+const getMediaDuration = async (path: string): Promise<number> => {
+	try {
+		const { stdout } = await execa("ffprobe", [
+			"-v",
+			"error",
+			"-show_entries",
+			"format=duration",
+			"-of",
+			"default=noprint_wrappers=1:nokey=1",
+			path,
+		]);
+
+		return Number(stdout);
+	} catch (error) {
+		return 0;
+	}
+};
+
 export {
-	getImageSize,
-	resizeImage,
-	closestSizeRatio,
-	ImageMaxDimensions,
-	convertToMp4,
 	MediaFilter,
+	ImageMaxDimensions,
+	getImageSize,
+	closestSizeRatio,
+	resizeImage,
+	convertToMp4,
 	getFileSize,
 	generateScreenshot,
+	getMediaDuration,
 };

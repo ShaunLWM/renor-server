@@ -13,6 +13,7 @@ import {
 	generateScreenshot,
 	getFileSize,
 	getImageSize,
+	getMediaDuration,
 	ImageMaxDimensions,
 	resizeImage,
 } from "../FileProcessor";
@@ -89,13 +90,18 @@ uploadRouter.post("/", upload.single("img"), async (req, res, next) => {
 				? `${slugify(tags.join("-"))}-gif-${numberId}`
 				: `gif-${numberId}`;
 
+		const size = await getImageSize(imageProcessedPath);
+		const duration = await getMediaDuration(imageProcessedPath);
 		const gif = await new Gif({
 			title: `${tags.slice(0, 2).join(" ")} GIF`.trim(),
 			slug,
 			tags: tagIds,
+			details: {
+				duration,
+				dimens: [size.height, size.width],
+			},
 		}).save();
 
-		const size = await getImageSize(imageProcessedPath);
 		for (const [key, children] of Object.entries(ImageMaxDimensions)) {
 			for (const [mediaType, mediaValue] of Object.entries(children)) {
 				const uniqId = nanoid(32);
